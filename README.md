@@ -21,4 +21,4 @@ $ yarn start
 
 ```
 
-![Alt text](/demo.jpg?raw=true "Demo")
+![Demo Screen](/demo.png?raw=true "Demo")
