@@ -3,3 +3,7 @@ yarn.lock
 build
 firebase.json
 .env
+.firebase
+/build
+firebase.json
+.firebaserc
