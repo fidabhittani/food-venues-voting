@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { PageHeader, Row, Col, Spin, Alert } from "antd";
+import {
+  PageHeader,
+  Row,
+  Col,
+  Spin,
+  Alert,
+  Card,
+  Button,
+  Popover,
+  Input
+} from "antd";
 import MainLayout from "./layout";
 import UserVotes from "./components/vote";
 import Voter from "./components/voter";
@@ -8,35 +18,72 @@ import { getBestThreeVenues } from "./api";
 import { connect } from "react-redux";
 import SearchInput from "./components/search";
 
-const users = ["Fida", "Rehan", "Ali", "usman", "Sabir"];
-
-const places = ["la Montana", "Monal", "Labaik"];
-
-const userVotes = users.map((user, index) => {
-  return {
-    name: user,
-    userId: index + 1,
-    votes: places.map((place, inIndex) => {
-      return {
-        userId: index + 1,
-        placeId: inIndex + 1,
-        vote: inIndex === 1 ? true : false
-      };
-    })
-  };
-});
-
 const App = ({ loading, message }: any) => {
-  const [venues, setVenues] = useState([]);
+  const [venues, setVenues]: any = useState([]);
   const [search, setSearch] = useState("Berlin");
-  console.log({ loading, message });
+  const [user, setUser] = useState("");
+  let [userVotes, setUserVotes]: any = useState([]);
+  const [showParticipant, setShowParticipant]: any = useState(false);
 
   /**
-   *  Hook into app cycle for data fetching
+   *  Process Voted Items
+   */
+  const processVenueVotes = () => {
+    const votes = userVotes.reduce((venueVotes: any, user: any) => {
+      const { votes } = user;
+      const [voteVenue]: any = votes.filter((venue: any) => venue.vote);
+      if (voteVenue) {
+        if (!venueVotes[voteVenue.placeId]) {
+          venueVotes[voteVenue.placeId] = 1;
+        } else {
+          venueVotes[voteVenue.placeId] = venueVotes[voteVenue.placeId] + 1;
+        }
+      }
+      return venueVotes;
+    }, {});
+
+    return votes;
+  };
+
+  /**
+   *  Voting For a User
    */
 
   const onVote = (vote: any) => {
-    console.log("hello", venues);
+    const searchUser = (user: any) => user.userId === vote.userId;
+
+    const user = userVotes.find(searchUser);
+    if (user) {
+      const userIndex = userVotes.findIndex(searchUser);
+      const updatedUser = {
+        ...user,
+        votes: venues.map((venue: any) => {
+          return {
+            userId: vote.userId,
+            placeId: venue.id,
+            vote: venue.id === vote.placeId
+          };
+        })
+      };
+
+      userVotes[userIndex] = {
+        ...updatedUser
+      };
+      setUserVotes([...userVotes]);
+      const currentVotes = processVenueVotes() || {};
+
+      /**
+       *  Update Venues Rating
+       */
+      const newVenues = venues.map((venue: any) => {
+        return {
+          ...venue,
+          rating: currentVotes[venue.id] ? currentVotes[venue.id] : 0
+        };
+      });
+
+      setVenues(newVenues);
+    }
   };
 
   const onSearch = async () => {
@@ -48,6 +95,28 @@ const App = ({ loading, message }: any) => {
     event.persist();
     setSearch(event.target.value);
   };
+
+  /**
+   *  Add Participant View
+   */
+
+  const addParticipant = () => {
+    const newId = userVotes.length + 10;
+    const newUser = {
+      name: user,
+      userId: newId,
+      votes: venues.map((venue: any) => {
+        return {
+          userId: newId,
+          placeId: venue.id,
+          vote: false
+        };
+      })
+    };
+    setUserVotes([...userVotes, newUser]);
+    setShowParticipant(false);
+  };
+
   const AppLayout = () => {
     return (
       <MainLayout>
@@ -55,23 +124,24 @@ const App = ({ loading, message }: any) => {
           title="Food Venue Recomendations"
           subTitle="List of best 3 places to have a lunch"
         />
-        {message && message.message && (
-          <Alert message={message.message} type={message.type} />
-        )}
+        <Card>
+          {message && message.message && (
+            <Alert message={message.message} type={message.type} />
+          )}
 
-        <SearchInput value={search} onChange={onChange} onSearch={onSearch} />
-
+          <SearchInput value={search} onChange={onChange} onSearch={onSearch} />
+        </Card>
         <Row gutter={16}>
           <Col className="gutter-row" span={6} offset={4}>
             Votes
           </Col>
           <Col span={10}>
-            <Recomendations />
+            <Recomendations venues={venues} />
           </Col>
         </Row>
 
         {userVotes &&
-          userVotes.map(user => {
+          userVotes.map((user: any) => {
             return (
               <Row gutter={16} key={user.name}>
                 <Col className="gutter-row" span={6} offset={4}>
@@ -83,6 +153,46 @@ const App = ({ loading, message }: any) => {
               </Row>
             );
           })}
+        <Card>
+          <Row gutter={2}>
+            <Col className="gutter-row" span={6} offset={4}>
+              <Popover
+                content={
+                  <React.Fragment>
+                    <Input
+                      className="search-item"
+                      value={user}
+                      onChange={event => {
+                        event.persist();
+                        setUser(event.target.value);
+                      }}
+                      autoFocus
+                    />
+                    <Button
+                      style={{ marginTop: "20px" }}
+                      type="primary"
+                      onClick={addParticipant}
+                    >
+                      Add
+                    </Button>
+                  </React.Fragment>
+                }
+                title="Add Participant"
+                trigger="click"
+                visible={showParticipant}
+                onVisibleChange={() => setShowParticipant(!showParticipant)}
+              >
+                <Button
+                  type="primary"
+                  disabled={!venues.length}
+                  onClick={() => setShowParticipant(!showParticipant)}
+                >
+                  Add Participant
+                </Button>
+              </Popover>
+            </Col>
+          </Row>
+        </Card>
       </MainLayout>
     );
   };

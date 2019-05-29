@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { Col, Row, Button, Input } from "antd";
 /**
  *
@@ -14,25 +14,15 @@ interface ISearchInput {
 }
 
 const SearchInput = ({ value, onChange, onSearch }: ISearchInput) => {
-  /**
-   * Set Focus Back to element
-   */
-  const inputEl = useRef(null);
-  useEffect(() => {
-    (inputEl as any).current.focus();
-  }, [inputEl]);
-
   return (
     <Row gutter={16}>
       <Col className="gutter-row" span={6} offset={4}>
-        <span>
-          <Input
-            className="search-item"
-            value={value}
-            onChange={onChange}
-            ref={inputEl}
-          />
-        </span>
+        <Input
+          className="search-item"
+          value={value}
+          onChange={onChange}
+          autoFocus
+        />
       </Col>
       <Col span={10}>
         <Button
