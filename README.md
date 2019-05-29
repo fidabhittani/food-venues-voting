@@ -20,3 +20,5 @@ $ yarn
 $ yarn start
 
 ```
+
+![Alt text](/demo.jpg?raw=true "Demo")
