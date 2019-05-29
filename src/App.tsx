@@ -75,12 +75,18 @@ const App = ({ loading, message }: any) => {
       setUserVotes([...userVotes]);
       const currentVotes = processVenueVotes() || {};
 
-      const maxVotesId = Object.keys(currentVotes).reduce((max, n) => {
-        if (currentVotes[n] > max) {
-          max = n;
-        }
-        return max;
-      }, "");
+      const maxVotesId = Object.keys(currentVotes).reduce(
+        (max, key) => {
+          if (currentVotes[key] > max.count) {
+            max = {
+              count: currentVotes[key],
+              key
+            };
+          }
+          return max;
+        },
+        { count: 0, key: "" }
+      );
 
       /**
        *  Update Venues Rating
@@ -89,7 +95,7 @@ const App = ({ loading, message }: any) => {
         return {
           ...venue,
           rating: currentVotes[venue.id] ? currentVotes[venue.id] : 0,
-          active: maxVotesId === venue.id ? true : false
+          active: maxVotesId.key === venue.id ? true : false
         };
       });
 
