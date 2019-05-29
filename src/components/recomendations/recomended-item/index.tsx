@@ -1,4 +1,5 @@
 import React from "react";
+import { Rate } from "antd";
 import "./index.less";
 /**
  *
@@ -24,6 +25,9 @@ const RecomendedItem = ({
       <div className="title">{title}</div>
       <div className="description">{description}</div>
       <div className="rating">{rating}</div>
+      <div>
+        <Rate allowHalf defaultValue={rating} />
+      </div>
     </div>
   );
 };

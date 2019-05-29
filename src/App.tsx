@@ -8,8 +8,10 @@ import {
   Card,
   Button,
   Popover,
-  Input
+  Input,
+  Typography
 } from "antd";
+
 import MainLayout from "./layout";
 import UserVotes from "./components/vote";
 import Voter from "./components/voter";
@@ -17,8 +19,19 @@ import Recomendations from "./components/recomendations";
 import { getBestThreeVenues } from "./api";
 import { connect } from "react-redux";
 import SearchInput from "./components/search";
+import {
+  getInitialVotes,
+  getVotes,
+  getMaxVoteVenue,
+  updateVenuesRatings,
+  updateUserVotes
+} from "./config/functions";
+const { Title } = Typography;
 
 const App = ({ loading, message }: any) => {
+  /**
+   *  APP State
+   */
   const [venues, setVenues]: any = useState([]);
   const [search, setSearch] = useState("Berlin");
   const [user, setUser] = useState("");
@@ -26,26 +39,25 @@ const App = ({ loading, message }: any) => {
   const [showParticipant, setShowParticipant]: any = useState(false);
 
   /**
+   *  Process Venue ratings
+   */
+
+  const processVenueRatings = () => {
+    const currentVotes = processVenueVotes() || {};
+    const maxVotesVenue = getMaxVoteVenue(currentVotes);
+    /**
+     *  Update Venues
+     */
+    const newVenues = updateVenuesRatings(venues, currentVotes, maxVotesVenue);
+
+    setVenues(newVenues);
+  };
+
+  /**
    *  Process Voted Items
    */
   const processVenueVotes = () => {
-    const initialVotes = venues.reduce((votes: any, next: any) => {
-      if (!votes[next.id]) {
-        votes[next.id] = 0;
-      }
-      return votes;
-    }, {});
-
-    const votes = userVotes.reduce((venueVotes: any, user: any) => {
-      const { votes } = user;
-      const [voteVenue]: any = votes.filter((venue: any) => venue.vote);
-      if (voteVenue) {
-        venueVotes[voteVenue.placeId] = venueVotes[voteVenue.placeId] + 1;
-      }
-      return venueVotes;
-    }, initialVotes);
-
-    return votes;
+    return getVotes(userVotes, getInitialVotes(venues));
   };
 
   /**
@@ -53,59 +65,17 @@ const App = ({ loading, message }: any) => {
    */
 
   const onVote = (vote: any) => {
-    const searchUser = (user: any) => user.userId === vote.userId;
-
-    const user = userVotes.find(searchUser);
-    if (user) {
-      const userIndex = userVotes.findIndex(searchUser);
-      const updatedUser = {
-        ...user,
-        votes: venues.map((venue: any) => {
-          return {
-            userId: vote.userId,
-            placeId: venue.id,
-            vote: venue.id === vote.placeId
-          };
-        })
-      };
-
-      userVotes[userIndex] = {
-        ...updatedUser
-      };
-      setUserVotes([...userVotes]);
-      const currentVotes = processVenueVotes() || {};
-
-      const maxVotesId = Object.keys(currentVotes).reduce(
-        (max, key) => {
-          if (currentVotes[key] > max.count) {
-            max = {
-              count: currentVotes[key],
-              key
-            };
-          }
-          return max;
-        },
-        { count: 0, key: "" }
-      );
-
-      /**
-       *  Update Venues Rating
-       */
-      const newVenues = venues.map((venue: any) => {
-        return {
-          ...venue,
-          rating: currentVotes[venue.id] ? currentVotes[venue.id] : 0,
-          active: maxVotesId.key === venue.id ? true : false
-        };
-      });
-
-      setVenues(newVenues);
+    const newUserVotes = updateUserVotes(venues, userVotes, vote);
+    if (newUserVotes) {
+      setUserVotes([...newUserVotes]);
+      processVenueRatings();
     }
   };
 
   const onSearch = async () => {
     const venues = await getBestThreeVenues(search);
     setVenues(venues);
+    setUserVotes([]);
   };
 
   const onChange = (event: any) => {
@@ -150,7 +120,12 @@ const App = ({ loading, message }: any) => {
           <SearchInput value={search} onChange={onChange} onSearch={onSearch} />
         </Card>
         <Row gutter={16}>
-          <Col span={10} offset={10}>
+          <Col span={6} offset={4}>
+            <Card style={{ height: "100%" }}>
+              <Title level={3}>Participants</Title>
+            </Card>
+          </Col>
+          <Col span={10}>
             <Recomendations venues={venues} />
           </Col>
         </Row>
