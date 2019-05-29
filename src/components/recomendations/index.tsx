@@ -12,6 +12,7 @@ interface IVenue {
   id: number;
   location: any;
   rating: number;
+  active?: boolean;
 }
 interface IVenues {
   venues: IVenue[];
@@ -35,7 +36,7 @@ const Recomendations = ({ venues }: IVenues) => {
                   description={
                     (formattedAddress && formattedAddress.join(",")) || address
                   }
-                  active={true}
+                  active={venue.active}
                 />
               </Col>
             );

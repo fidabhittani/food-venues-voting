@@ -29,18 +29,21 @@ const App = ({ loading, message }: any) => {
    *  Process Voted Items
    */
   const processVenueVotes = () => {
+    const initialVotes = venues.reduce((votes: any, next: any) => {
+      if (!votes[next.id]) {
+        votes[next.id] = 0;
+      }
+      return votes;
+    }, {});
+
     const votes = userVotes.reduce((venueVotes: any, user: any) => {
       const { votes } = user;
       const [voteVenue]: any = votes.filter((venue: any) => venue.vote);
       if (voteVenue) {
-        if (!venueVotes[voteVenue.placeId]) {
-          venueVotes[voteVenue.placeId] = 1;
-        } else {
-          venueVotes[voteVenue.placeId] = venueVotes[voteVenue.placeId] + 1;
-        }
+        venueVotes[voteVenue.placeId] = venueVotes[voteVenue.placeId] + 1;
       }
       return venueVotes;
-    }, {});
+    }, initialVotes);
 
     return votes;
   };
@@ -72,13 +75,21 @@ const App = ({ loading, message }: any) => {
       setUserVotes([...userVotes]);
       const currentVotes = processVenueVotes() || {};
 
+      const maxVotesId = Object.keys(currentVotes).reduce((max, n) => {
+        if (currentVotes[n] > max) {
+          max = n;
+        }
+        return max;
+      }, "");
+
       /**
        *  Update Venues Rating
        */
       const newVenues = venues.map((venue: any) => {
         return {
           ...venue,
-          rating: currentVotes[venue.id] ? currentVotes[venue.id] : 0
+          rating: currentVotes[venue.id] ? currentVotes[venue.id] : 0,
+          active: maxVotesId === venue.id ? true : false
         };
       });
 
