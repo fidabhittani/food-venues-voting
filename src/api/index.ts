@@ -1,5 +1,8 @@
 import request from "../service";
 import { makeParams } from "../config/functions";
+
+import { API_END_POINT } from "../config/index";
+
 /**
  *  Get Venues
  * @param optionsIn
@@ -24,7 +27,7 @@ export const getBestThreeVenues = async (search: string) => {
 
   const options = {
     options: {
-      url: `/venues/search${queryString}`
+      url: `${API_END_POINT}/venues/search${queryString}`
     }
   };
 

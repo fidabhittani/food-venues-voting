@@ -115,6 +115,7 @@ const App = ({ loading, message }: any) => {
     };
     setUserVotes([...userVotes, newUser]);
     setShowParticipant(false);
+    setUser("");
   };
 
   const AppLayout = () => {
@@ -132,10 +133,7 @@ const App = ({ loading, message }: any) => {
           <SearchInput value={search} onChange={onChange} onSearch={onSearch} />
         </Card>
         <Row gutter={16}>
-          <Col className="gutter-row" span={6} offset={4}>
-            Votes
-          </Col>
-          <Col span={10}>
+          <Col span={10} offset={10}>
             <Recomendations venues={venues} />
           </Col>
         </Row>
