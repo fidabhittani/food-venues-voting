@@ -50,7 +50,9 @@ const UserVotes = ({ votes, onVote }: IVotes) => {
     <div className="vote-list">
       <Row gutter={16}>
         {votes &&
-          votes.map((vote: IVote) => <Vote {...vote} onVote={onVote} />)}
+          votes.map((vote: IVote, key: number) => (
+            <Vote key={key} {...vote} onVote={onVote} />
+          ))}
       </Row>
     </div>
   );
