@@ -8,7 +8,6 @@ import {
   Card,
   Button,
   Popover,
-  Input,
   Typography
 } from "antd";
 
@@ -26,6 +25,7 @@ import {
   updateVenuesRatings,
   updateUserVotes
 } from "./config/functions";
+import AddParticipant from "./components/add-participant";
 const { Title } = Typography;
 
 const App = ({ loading, message }: any) => {
@@ -147,30 +147,18 @@ const App = ({ loading, message }: any) => {
           <Row gutter={2}>
             <Col className="gutter-row" span={6} offset={4}>
               <Popover
+                key="add-participant"
                 content={
-                  <React.Fragment>
-                    <Input
-                      className="search-item"
-                      value={user}
-                      onChange={event => {
-                        event.persist();
-                        setUser(event.target.value);
-                      }}
-                      autoFocus
-                    />
-                    <Button
-                      style={{ marginTop: "20px" }}
-                      type="primary"
-                      onClick={addParticipant}
-                    >
-                      Add
-                    </Button>
-                  </React.Fragment>
+                  <AddParticipant
+                    value={user}
+                    setValue={setUser}
+                    addParticipant={addParticipant}
+                  />
                 }
                 title="Add Participant"
                 trigger="click"
                 visible={showParticipant}
-                onVisibleChange={() => setShowParticipant(!showParticipant)}
+                onVisibleChange={visible => setShowParticipant(visible)}
               >
                 <Button
                   type="primary"
