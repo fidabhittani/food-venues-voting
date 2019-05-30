@@ -15,16 +15,10 @@ import MainLayout from "./layout";
 import UserVotes from "./components/vote";
 import Voter from "./components/voter";
 import Recomendations from "./components/recomendations";
-import { getBestThreeVenues } from "./api";
+import * as api from "./api";
 import { connect } from "react-redux";
 import SearchInput from "./components/search";
-import {
-  getInitialVotes,
-  getVotes,
-  getMaxVoteVenue,
-  updateVenuesRatings,
-  updateUserVotes
-} from "./config/functions";
+import * as fn from "./config/functions";
 import AddParticipant from "./components/add-participant";
 const { Title } = Typography;
 
@@ -44,11 +38,15 @@ const App = ({ loading, message }: any) => {
 
   const processVenueRatings = () => {
     const currentVotes = processVenueVotes() || {};
-    const maxVotesVenue = getMaxVoteVenue(currentVotes);
+    const maxVotesVenue = fn.getMaxVoteVenue(currentVotes);
     /**
      *  Update Venues
      */
-    const newVenues = updateVenuesRatings(venues, currentVotes, maxVotesVenue);
+    const newVenues = fn.updateVenuesRatings(
+      venues,
+      currentVotes,
+      maxVotesVenue
+    );
 
     setVenues(newVenues);
   };
@@ -57,7 +55,7 @@ const App = ({ loading, message }: any) => {
    *  Process Voted Items
    */
   const processVenueVotes = () => {
-    return getVotes(userVotes, getInitialVotes(venues));
+    return fn.getVotes(userVotes, fn.getInitialVotes(venues));
   };
 
   /**
@@ -65,7 +63,7 @@ const App = ({ loading, message }: any) => {
    */
 
   const onVote = (vote: any) => {
-    const newUserVotes = updateUserVotes(venues, userVotes, vote);
+    const newUserVotes = fn.updateUserVotes(venues, userVotes, vote);
     if (newUserVotes) {
       setUserVotes([...newUserVotes]);
       processVenueRatings();
@@ -73,7 +71,7 @@ const App = ({ loading, message }: any) => {
   };
 
   const onSearch = async () => {
-    const venues = await getBestThreeVenues(search);
+    const venues = await api.getBestThreeVenues(search);
     setVenues(venues);
     setUserVotes([]);
   };
